@@ -4,6 +4,14 @@ let browser;
 const launchPuppeteer = async() => {
     browser = await puppeteer.launch();
     console.log(`Puppeteer Launched`);
+
+    browser.on('disconnected', () => {
+        console.log(`Puppeteer browser crashed Restarting browser`);
+        await browser.close();
+        if (browser && browser.process() != null) browser.process().kill('SIGINT');
+        await launchPuppeteer();
+    })
+
 }
 
 const getBrowser = () => {
