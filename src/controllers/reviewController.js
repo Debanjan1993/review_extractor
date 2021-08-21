@@ -8,7 +8,6 @@ class ReviewController {
 
 
     async sendReview(req, res) {
-
         const { url } = req.body;
         if (!url) {
             return res.status(400).json("Please enter a URL");
@@ -20,7 +19,6 @@ class ReviewController {
 
 
         const page = await this.browser.newPage();
-        await page.setDefaultNavigationTimeout(0);
         await page.goto(url, { waitUntil: 'networkidle0' });
         await page.waitForSelector('#CustomerReviewsBlock', {
             timeout: 0
@@ -31,17 +29,12 @@ class ReviewController {
             const el = customerReviewBlock.getElementsByTagName('div')
             const chArr = Array.from(childNodes);
             return childNodes;
-
         })
 
-
-
-        return res.status(200).json("hello");
-
-
+        await page.close();
+        return res.status(200).json(review);
 
     }
-
 }
 
 module.exports = ReviewController

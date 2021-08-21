@@ -14,7 +14,7 @@ class Routes {
             return res.sendFile(path.join(__dirname, '../../public/index.html'))
         })
 
-        this.router.get('/review', async(req, res) => {
+        this.router.post('/review', async(req, res) => {
             await this.reviewController.sendReview(req, res);
         })
 
