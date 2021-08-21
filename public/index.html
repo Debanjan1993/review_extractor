@@ -6,10 +6,88 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
-    <h1>Hello World</h1>
+    <div id="app">
+        <h1>Review Analyzer</h1>
+        <input type="text" placeholder="Enter the URL" v-model="url">
+        <input type="submit" v-on:click="submit()" value="CHECK REVIEWS">
+        <div v-show="loading" class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div id="table">
+            <table class="table table-primary table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Comment</th>
+                        <th scope="col">Rating</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Name</th>
+                    </tr>
+                </thead>
+                <tbody v-for="review in reviews" :key="review.id">
+                    <td>{{review.comment}}</td>
+                    <td>{{review.rating}}</td>
+                    <td>{{review.date}}</td>
+                    <td>{{review.name}}</td>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
 </body>
+
+
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            url: '',
+            reviews: [{
+                comment: '',
+                rating: '',
+                date: '',
+                name: ''
+            }],
+            loading: false
+        },
+        methods: {
+            submit() {
+                this.loading = true;
+                const obj = {
+                    url: this.url
+                }
+
+                fetch('/review', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(obj)
+                }).then(res => {
+                    if (res.status !== 200) {
+                        res.json().then(data => alert(data));
+                        this.loading = false;
+                    } else {
+                        res.json().then(data => {
+                            console.log(data);
+                            this.reviews = data;
+                            this.loading = false;
+                        })
+                    }
+                })
+
+
+
+            }
+        }
+
+    })
+</script>
 
 </html>
