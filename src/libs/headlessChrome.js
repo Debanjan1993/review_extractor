@@ -9,7 +9,7 @@ const launchPuppeteer = async() => {
             "--disable-setuid-sandbox",
             "--no-sandbox",
         ],
-        headless: false
+        // headless: false
     });
     console.log(`Puppeteer Launched`);
 
