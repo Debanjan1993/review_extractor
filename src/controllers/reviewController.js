@@ -24,15 +24,24 @@ class ReviewController {
 
         const page = await browser.newPage();
         try {
+            const reviewsArr = [];
             await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
             await page.waitForSelector('#CustomerReviewsBlock', { timeout: 10000 });
-            const reviewsArr = [];
-            reviewsArr.push(...await this.extractReviews(page));
 
             await page.click("#reviewtab a");
+            await page.waitFor(10000);
 
 
-            await page.click(".reviewsPagination .reviewPage a");
+
+            while (await page.$('.reviewsPagination .reviewPage a[title="Next"]')) {
+                await page.click('.reviewsPagination .reviewPage a[title="Next"]');
+                await page.waitFor(10000);
+                const temp = await this.extractReviews(page)
+                reviewsArr.push(...temp);
+            }
+
+
+
 
 
             // reviewsArr.push(...await this.extractReviews(page));
