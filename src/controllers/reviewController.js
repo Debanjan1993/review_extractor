@@ -21,57 +21,48 @@ class ReviewController {
         if (!url.includes("www.tigerdirect.com")) {
             return res.status(500).json("Enter tigerdirect URL");
         }
-
+        console.time("start")
         const page = await browser.newPage();
         try {
+            let a = 0;
             const reviewsArr = [];
-            await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
             await page.waitForSelector('#CustomerReviewsBlock', { timeout: 10000 });
 
             await page.click("#reviewtab a");
-            await page.waitFor(10000);
+            await page.waitFor(2000);
 
 
+            const temp = await this.extractReviews(page);
+            reviewsArr.push(...temp);
 
-            while (await page.$('.reviewsPagination .reviewPage a[title="Next"]')) {
+            while ((await page.$('.reviewsPagination .reviewPage a[title="Next"]')) && a < 10) {
+                a = a + 1;
                 await page.click('.reviewsPagination .reviewPage a[title="Next"]');
-                await page.waitFor(10000);
+                await page.waitFor(3000);
                 const temp = await this.extractReviews(page)
                 reviewsArr.push(...temp);
             }
 
+            const modArr = reviewsArr.filter((tag, index, arr) => arr.findIndex(t => t["Review Comment"] == tag["Review Comment"] && t["Reviewer Name"] == tag["Reviewer Name"]) == index)
 
-
-
-
-            // reviewsArr.push(...await this.extractReviews(page));
-
-            // const checkClick = await page.$(".reviewsPagination .reviewPage #Next a")
-            // while (checkClick) {
-            //     console.log("a");
-            //     await page.click(".reviewPage #Next a");
-            //     const tempArr = await this.extractReviews(page);
-            //     reviewsArr.push(...tempArr);
-            // }
-
-
-
-
-            // await page.close();
-            return res.status(200).json(reviewsArr);
+            await page.close();
+            console.timeEnd("start")
+            return res.status(200).json(modArr);
         } catch (e) {
             if (e.message.includes("waiting for selector `#CustomerReviewsBlock`")) {
                 return res.status(200).json("No reviews present for this item");
             }
             console.log(`Exception occurred : ${e.message}`);
             await page.close();
-            return res.status(500).json(e);
+            console.timeEnd("start")
+            return res.status(500).json(e.message);
         }
 
     }
 
     async extractReviews(page) {
-        const review = await page.evaluate(() => {
+        const review = page.evaluate(() => {
             const reviewsArr = [];
             const customerReviewBlock = document.querySelector("#CustomerReviewsBlock").childNodes[5].children;
             Array.from(customerReviewBlock).forEach(elem => {
