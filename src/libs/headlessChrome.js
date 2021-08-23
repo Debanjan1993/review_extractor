@@ -5,7 +5,7 @@ const launchPuppeteer = async() => {
     browser = await puppeteer.launch();
     console.log(`Puppeteer Launched`);
 
-    browser.on('disconnected', () => {
+    browser.on('disconnected', async() => {
         console.log(`Puppeteer browser crashed Restarting browser`);
         await browser.close();
         if (browser && browser.process() != null) browser.process().kill('SIGINT');
